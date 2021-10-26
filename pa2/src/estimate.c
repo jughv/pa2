@@ -5,6 +5,15 @@
 #include<stdio.h>
 
 
+double **inverse(double **original, int r, int c){ //must invert the matrixes properly
+    double **res = (double**)malloc(r*sizeof(double*));
+    for (int i = 0; i < r; i++){
+        res[i] = (double*)malloc(c*sizeof(double));   //allocate columns
+    }
+
+
+    return res;
+}
 
 
 double** matmulti(double **mat1, double **mat2, int mat1col, int mat1row, int mat2col){
@@ -35,16 +44,16 @@ double** matmulti(double **mat1, double **mat2, int mat1col, int mat1row, int ma
 
 
 
-double** inverse (double** matrix, int r, int c){
+double** transpose(double** matrix, int r, int c){ //basically flip the matrix
     
-    double  **res = (double**) malloc (c*r*sizeof(double));//allocate rows
+    double  **res = (double**) malloc (r*sizeof(double));//allocate rows
         for (int i = 0; i < r; i++){
         res[i] = (double*)malloc(c*sizeof(double));   //allocate columns
     }   
 
         for (int i = 0; i < r; i++){ //fill rows
-            for (int j = 0; j < c; j++){
-                res[i][j] = matrix[i][j];
+            for (int j = 0; j < c; j++){ //fill columns
+                res[i][j] = matrix[j][i];
             }        
     }
 
@@ -68,6 +77,7 @@ int main (int argc, char **argv){
 
     FILE *train = fopen(argv[1], "r"); //training data
     FILE *data = fopen(argv[2], "r"); //data data
+    char str1[10], str2[10];
     int trainrows; //training data rows
     int traincolumns; //training data columns
     int datarows; //data data rows
@@ -75,13 +85,13 @@ int main (int argc, char **argv){
 
     //training file arguments
 
-   // fscanf(train,"%d\n", &rows);//need to figure out how to take in train
+    fscanf(train,"%s\n", &str1);//take in train string
     fscanf(train," %lf\n", &traincolumns); // read num of columns
     fscanf(train," %lf\n", &trainrows); //read num of rows
 
     //data file arguments
 
-    // fscanf(data,"%d\n", &rows);//need to figure out how to take in train
+    fscanf(data,"%s\n", &str2);//take in data string
     fscanf(data," %lf\n", &datacolumns); // read num of columns
     fscanf(data," %lf\n", &datarows); //read num of rows
 
@@ -121,7 +131,15 @@ int main (int argc, char **argv){
 
     //finished filling up matrixes from data files
 
-    
+    double **testtranspose = transpose(xtrain,traincolumns,trainrows); //create a transposed matrix X^T
+
+    double **current = matmulti(testtranspose,xtrain, trainrows, traincolumns, traincolumns); //multiply transpose by original (X^TX)
+
+    double **testinverse= inverse(current, traincolumns, traincolumns); //inverse the multiple  (X^TX)^-1
+
+    current = matmulti(testinverse,testtranspose, traincolumns,traincolumns,traincolumns); //multiply next pievce of the puzzle (X^TX)^-1X^T
+
+    current = matmulti(current,y,traincolumns,traincolumns,1); //current is now equal to weights (X^TX)^-1X^TY=W
     
 
 
