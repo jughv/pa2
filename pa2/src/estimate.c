@@ -4,6 +4,13 @@
 #include <math.h>
 #include<stdio.h>
 
+void print(double** matrix, int r){
+    for (int i =0;i<r;i++){
+        printf("%.0f\n", matrix[i][0]);
+    }
+    return;
+}
+
 
 double **inverse(double **original, int r, int c){ //must invert the matrixes properly
     double **res = (double**)malloc(r*sizeof(double*));
@@ -72,7 +79,7 @@ int main (int argc, char **argv){
 	} 
 
 
-    double **xtest = NULL;
+ //   double **xtest = NULL;
 
 
     FILE *train = fopen(argv[1], "r"); //training data
@@ -139,11 +146,23 @@ int main (int argc, char **argv){
 
     current = matmulti(testinverse,testtranspose, traincolumns,traincolumns,traincolumns); //multiply next pievce of the puzzle (X^TX)^-1X^T
 
-    current = matmulti(current,y,traincolumns,traincolumns,1); //current is now equal to weights (X^TX)^-1X^TY=W
+    double **weights = matmulti(current,y,traincolumns,traincolumns,1); //current is now equal to weights (X^TX)^-1X^TY=W
+    
+    double **answer = matmulti(xdata,weights, datacolumns, datarows, 1); //answer is XW = Y
+
     
 
+free(xtrain);
+free(xdata);
+free(y);
+free(testtranspose);
+free(current);
+free(testinverse);
+free(weights);
+free(answer);
+//free(xtest);
 
-    
+
     return 0;
 }
 
