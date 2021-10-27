@@ -4,26 +4,69 @@
 #include <math.h>
 #include<stdio.h>
 
-void print(double** matrix, int r){
+void print(double** matrix, int r){ //prints final answer
     for (int i =0;i<r;i++){
         printf("%.0f\n", matrix[i][0]);
     }
     return;
 }
 
-
-double **inverse(double **original, int r, int c){ //must invert the matrixes properly
-    double **res = (double**)malloc(r*sizeof(double*));
-    for (int i = 0; i < r; i++){
+double **identity(int c){ //creates the identity matrix
+    double **res = (double**)malloc(c*sizeof(double*));
+    for (int i = 0; i < c; i++){
         res[i] = (double*)malloc(c*sizeof(double));   //allocate columns
     }
+        for (int i = 0; i < c; i++){
+                for (int j = 0; j < c; j++){
+            if(j == i){
+                res[i][j]=1;
+            }else{
+                res[i][j]=0;
+            }//end else
 
-
+    }//end little for
+    
+}//end big for
     return res;
 }
 
 
-double** matmulti(double **mat1, double **mat2, int mat1col, int mat1row, int mat2col){
+double **inverse(double **M, double **I, int r, int c){ //must invert the matrixes properly
+//   double **res = (double**)malloc(r*sizeof(double*));
+//   double **temp =M;
+//    for (int i = 0; i < r; i++){
+//       res[i] = (double*)malloc(c*sizeof(double));   //allocate columns
+//    }
+//    return res;
+
+    double f; //pivoter
+
+    for (int i =0; i<r; i++){
+        f = M[i][i];
+
+        for(int p = 0; p<c;p++){
+                M[i][p] = M[i][p]/f;
+                I[i][p] = I[i][p]/f;
+        }//end small for
+
+        for (int p = 0; p<c; p++){
+            f = M[p][i];
+            if(p == i){} //skip identities
+            else{
+                for (int x = 0; x<c; c++){
+                    M[p][x]= M[p][x]- (f * M[i][x]);
+                    I[p][x]= I[i][x] - (f * I[i][x]);
+                }
+            }//end else
+        }
+
+    }//end big for
+    return I;
+ //   return res;
+}
+
+
+double** matmulti(double **mat1, double **mat2, int mat1col, int mat1row, int mat2col){ //multiplies matrixes
 
     double  **res = (double**) malloc (mat1row*sizeof(double));//allocate rows
     int temp = 0;
@@ -94,12 +137,14 @@ int main (int argc, char **argv){
 
     fscanf(train,"%s\n", &str1);//take in train string
     fscanf(train," %lf\n", &traincolumns); // read num of columns
+    traincolumns+=1; //add in ones column
     fscanf(train," %lf\n", &trainrows); //read num of rows
 
     //data file arguments
 
     fscanf(data,"%s\n", &str2);//take in data string
     fscanf(data," %lf\n", &datacolumns); // read num of columns
+    datacolumns +=1; //add in ones column
     fscanf(data," %lf\n", &datarows); //read num of rows
 
 
@@ -108,18 +153,18 @@ int main (int argc, char **argv){
     double **xdata = (double**)malloc(datarows*sizeof(double*)); //data file matrix
 
     for (int i = 0; i<trainrows;i++){
-        xtrain[i] = (double*)malloc(traincolumns+1*sizeof(double)); //allocate space for training columns
+        xtrain[i] = (double*)malloc(traincolumns*sizeof(double)); //allocate space for training columns
         xtrain[i][0] = 1; //first column is all 1
         y[i] = (double*)malloc(1*sizeof(double)); //allocate y columns
     }
 
     for (int i = 0; i<datarows;i++){
-        xdata[i] = (double*)malloc(datacolumns+1*sizeof(double)); //allocate space for data columns
+        xdata[i] = (double*)malloc(datacolumns*sizeof(double)); //allocate space for data columns
         xdata[i][0] = 1;//first column is all 1
     }
 
     for (int i = 0; i < trainrows; i++){
-        for (int j = 1; j <= traincolumns; j++){
+        for (int j = 1; j < traincolumns; j++){
             fscanf(train," %lf", &xtrain[i][j]); //fill up values of training matrix
 
         }
@@ -130,7 +175,7 @@ int main (int argc, char **argv){
 
     for(int i = 0; i <datarows; i++){
         xdata[i][0]= 1; //first column is all 1
-        for(int j = 1;j<=datacolumns;j++){
+        for(int j = 1;j<datacolumns;j++){
             fscanf(data," %lf",&xdata[i][j]); //fill up test data matrix
         }
         fscanf(data, "\n");
@@ -142,7 +187,9 @@ int main (int argc, char **argv){
 
     double **current = matmulti(testtranspose,xtrain, trainrows, traincolumns, traincolumns); //multiply transpose by original (X^TX)
 
-    double **testinverse= inverse(current, traincolumns, traincolumns); //inverse the multiple  (X^TX)^-1
+    double **I = identity(traincolumns);
+
+    double **testinverse= inverse(current, I, traincolumns, traincolumns); //inverse the multiple  (X^TX)^-1
 
     current = matmulti(testinverse,testtranspose, traincolumns,traincolumns,traincolumns); //multiply next pievce of the puzzle (X^TX)^-1X^T
 
@@ -150,7 +197,7 @@ int main (int argc, char **argv){
     
     double **answer = matmulti(xdata,weights, datacolumns, datarows, 1); //answer is XW = Y
 
-    
+    print(answer, datarows); //prints answer
 
 free(xtrain);
 free(xdata);
