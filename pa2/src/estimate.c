@@ -12,10 +12,18 @@ void print(double** matrix, int r){ //prints final answer
 }
 
 double **identity(int c){ //creates the identity matrix
+    /*
     double **res = (double**)malloc(c*sizeof(double*));
     for (int i = 0; i < c; i++){
         res[i] = (double*)malloc(c*sizeof(double));   //allocate columns
     }
+    */
+
+    double **res = malloc(c*sizeof(double*));
+    for (int i = 0; i < c; i++){
+        res[i] = malloc(c*sizeof(res[0]));   //allocate columns
+    }
+
         for (int i = 0; i < c; i++){
                 for (int j = 0; j < c; j++){
             if(j == i){
@@ -67,7 +75,7 @@ double **inverse(double **M, double **I, int r, int c){ //must invert the matrix
 
 
 double** matmulti(double **mat1, double **mat2, int mat1col, int mat1row, int mat2col){ //multiplies matrixes
-
+        /*
     double  **res = (double**) malloc (mat1row*sizeof(double));//allocate rows
     int temp = 0;
 
@@ -75,6 +83,12 @@ double** matmulti(double **mat1, double **mat2, int mat1col, int mat1row, int ma
     for (int i = 0; i < mat1row; i++){
         res[i] = (double*)malloc(mat2col*sizeof(double));   //allocate columns
     }   
+    */
+   int temp = 0;
+   double **res = malloc(mat1row*sizeof(double*));
+    for (int i = 0; i < mat1row; i++){
+        res[i] = malloc(mat2col*sizeof(res[0]));   //allocate columns
+    }
 
 
     for (int i = 0; i < mat1row; i++){ //multiply
@@ -95,11 +109,17 @@ double** matmulti(double **mat1, double **mat2, int mat1col, int mat1row, int ma
 
 
 double** transpose(double** matrix, int r, int c){ //basically flip the matrix
-    
+   /* 
     double  **res = (double**) malloc (r*sizeof(double));//allocate rows
         for (int i = 0; i < r; i++){
         res[i] = (double*)malloc(c*sizeof(double));   //allocate columns
-    }   
+    
+    } 
+    */  
+    double **res = malloc(c*sizeof(double*));
+    for (int i = 0; i < c; i++){
+        res[i] = malloc(c*sizeof(res[0]));   //allocate columns
+    }
 
         for (int i = 0; i < r; i++){ //fill rows
             for (int j = 0; j < c; j++){ //fill columns
@@ -127,7 +147,7 @@ int main (int argc, char **argv){
 
     FILE *train = fopen(argv[1], "r"); //training data
     FILE *data = fopen(argv[2], "r"); //data data
-    char str1[10], str2[10];
+    char str1[6], str2[6];
     int trainrows; //training data rows
     int traincolumns; //training data columns
     int datarows; //data data rows
@@ -135,38 +155,53 @@ int main (int argc, char **argv){
 
     //training file arguments
 
-    fscanf(train,"%s\n", &str1);//take in train string
-    fscanf(train," %lf\n", &traincolumns); // read num of columns
+    fscanf(train,"%5s\n",str1);////take in train string
+    fscanf(train," %d\n", &traincolumns); // read num of columns
     traincolumns+=1; //add in ones column
-    fscanf(train," %lf\n", &trainrows); //read num of rows
+    fscanf(train," %d\n", &trainrows); //read num of rows
 
     //data file arguments
 
-    fscanf(data,"%s\n", &str2);//take in data string
-    fscanf(data," %lf\n", &datacolumns); // read num of columns
+    fscanf(data,"%5s\n", str2);//take in data string   
+    fscanf(data," %d\n", &datacolumns); // read num of columns
     datacolumns +=1; //add in ones column
-    fscanf(data," %lf\n", &datarows); //read num of rows
+    fscanf(data," %d\n", &datarows); //read num of rows
 
-
+    double ha;
+    /*
     double **xtrain = (double**)malloc(trainrows*sizeof(double*));//training file matrix
     double **y = (double**)malloc(trainrows*sizeof(double*));//y matrix
     double **xdata = (double**)malloc(datarows*sizeof(double*)); //data file matrix
+    */
+    double **xtrain = malloc(trainrows*sizeof(double*));//training file matrix
+    double **y = malloc(trainrows*sizeof(double*));//y matrix
+    double **xdata = malloc(datarows*sizeof(double*)); //data file matrix
 
     for (int i = 0; i<trainrows;i++){
+        /*
         xtrain[i] = (double*)malloc(traincolumns*sizeof(double)); //allocate space for training columns
         xtrain[i][0] = 1; //first column is all 1
         y[i] = (double*)malloc(1*sizeof(double)); //allocate y columns
+        */
+        xtrain[i] = malloc(traincolumns*sizeof(xtrain[0])); //allocate space for training columns
+        xtrain[i][0] = 1; //first column is all 1
+        y[i] = malloc(1*sizeof(double)); //allocate y columns
     }
 
     for (int i = 0; i<datarows;i++){
+        /*
         xdata[i] = (double*)malloc(datacolumns*sizeof(double)); //allocate space for data columns
         xdata[i][0] = 1;//first column is all 1
+        */
+        xdata[i] = malloc(datacolumns*sizeof(xdata[0])); //allocate space for data columns
+        xdata[i][0] = 1;//first column is all 1
+        
     }
 
     for (int i = 0; i < trainrows; i++){
         for (int j = 1; j < traincolumns; j++){
-            fscanf(train," %lf", &xtrain[i][j]); //fill up values of training matrix
-
+            fscanf(train," %lf", &ha); //fill up values of training matrix
+            xtrain[i][j] = ha;
         }
         fscanf(train," %lf", &y[i][0]); //y values
         fscanf(train,"\n"); //next line
@@ -176,7 +211,8 @@ int main (int argc, char **argv){
     for(int i = 0; i <datarows; i++){
         xdata[i][0]= 1; //first column is all 1
         for(int j = 1;j<datacolumns;j++){
-            fscanf(data," %lf",&xdata[i][j]); //fill up test data matrix
+            fscanf(data," %lf",&ha); //fill up test data matrix
+            xdata[i][j] = ha;
         }
         fscanf(data, "\n");
     }
