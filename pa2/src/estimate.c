@@ -2,7 +2,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
-#define DEBUG 0
+#define DEBUG 1
 
 void freedom(double **matrix, int r){ //free columns of matrices
     for (int i =0;i<r;i++){
@@ -131,7 +131,7 @@ double **inverse(double **M, double **I, int n){ //must invert the matrixes prop
             
             
                 for (int x = 0; x<n; x++){
-                    //if(p == i  ){continue;}
+                    if(p == i  ){continue;}
                     temp[p][x]= temp[p][x]- (g * temp[i][x]);
                     I[p][x]= I[p][x] - (g * I[i][x]);
                     //temp[x][p]= temp[x][p]- (g * temp[i][p]);
