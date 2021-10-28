@@ -2,14 +2,46 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include<stdio.h>
+#include <stdio.h>
+#define DEBUG 1
 
+void freedom(double **matrix, int r){ //free columns of matrices
+    for (int i =0;i<r;i++){
+        free(matrix[i]);
+    }
+    free(matrix);
+}
+/*
 void print(double** matrix, int r){ //prints final answer
     for (int i =0;i<r;i++){
+        
         printf("%.0f\n", matrix[i][0]);
     }
+
+
     return;
 }
+
+*/
+
+void printmat(double **mat, int matrow, int matcol){
+    for (int a = 0; a < matrow; a++){
+        for (int b = 0; b < matcol; b++){
+            printf("%.1f", mat[a][b]);
+            if (b+1 == matcol){
+                continue;
+            }
+            printf(" ");
+        }
+        if (a+1 == matrow){
+            continue;
+        }
+        printf("\n");
+    }
+    printf("\n"); 
+}
+
+
 
 double **identity(int c){ //creates the identity matrix
     /*
@@ -46,24 +78,24 @@ double **inverse(double **M, double **I, int r, int c){ //must invert the matrix
 //       res[i] = (double*)malloc(c*sizeof(double));   //allocate columns
 //    }
 //    return res;
-
-    double f; //pivoter
+    double **temp = M;
+    double f,g; //pivoter
 
     for (int i =0; i<r; i++){
-        f = M[i][i];
+        f = temp[i][i];
 
-        for(int p = 0; p<c;p++){
-                M[i][p] = M[i][p]/f;
-                I[i][p] = I[i][p]/f;
+        for(int p = 0; p<r;p++){
+                temp[i][p] = temp[i][p] / f;
+                I[i][p] = I[i][p] / f;
         }//end small for
 
         for (int p = 0; p<c; p++){
-            f = M[p][i];
+            g = temp[p][i];
             if(p == i){} //skip identities
             else{
-                for (int x = 0; x<c; c++){
-                    M[p][x]= M[p][x]- (f * M[i][x]);
-                    I[p][x]= I[i][x] - (f * I[i][x]);
+                for (int x = 0; x<c; x++){
+                    temp[p][x]= M[p][x]- (g * temp[i][x]);
+                    I[p][x]= I[p][x] - (g * I[i][x]);
                 }
             }//end else
         }
@@ -84,7 +116,7 @@ double** matmulti(double **mat1, double **mat2, int mat1col, int mat1row, int ma
         res[i] = (double*)malloc(mat2col*sizeof(double));   //allocate columns
     }   
     */
-   int temp = 0;
+   double temp = 0.0;
    double **res = malloc(mat1row*sizeof(double*));
     for (int i = 0; i < mat1row; i++){
         res[i] = malloc(mat2col*sizeof(res[0]));   //allocate columns
@@ -94,10 +126,10 @@ double** matmulti(double **mat1, double **mat2, int mat1col, int mat1row, int ma
     for (int i = 0; i < mat1row; i++){ //multiply
         for(int k = 0; k < mat2col; k++){
             for (int j = 0; j < mat1col; j++){
-                temp += mat1[i][j] * mat2[j][k];
+                temp = (mat1[i][j] * mat2[j][k]) + temp;
             }
             res[i][k] = temp;
-            temp = 0;
+            temp = 0.0;
             
         }
     }
@@ -156,16 +188,22 @@ int main (int argc, char **argv){
     //training file arguments
 
     fscanf(train,"%5s\n",str1);////take in train string
+   // printf("train :%s\n",str1);
     fscanf(train," %d\n", &traincolumns); // read num of columns
     traincolumns+=1; //add in ones column
+    //printf("train columns:%d\n",traincolumns);
     fscanf(train," %d\n", &trainrows); //read num of rows
+    //printf("train rows:%d\n",trainrows);
 
     //data file arguments
 
-    fscanf(data,"%5s\n", str2);//take in data string   
+    fscanf(data,"%5s\n", str2);//take in data string  
+    //printf("data :%s\n",str2); 
     fscanf(data," %d\n", &datacolumns); // read num of columns
     datacolumns +=1; //add in ones column
+    //printf("data columns:%d\n",datacolumns);
     fscanf(data," %d\n", &datarows); //read num of rows
+    //printf("data rows:%d\n",datarows);
 
     double ha;
     /*
@@ -207,6 +245,12 @@ int main (int argc, char **argv){
         fscanf(train,"\n"); //next line
     }
 
+    if(DEBUG){
+    printf("xtrain: \n");
+    printmat(xtrain, trainrows, traincolumns);
+    printf("\n");
+    }
+    
 
     for(int i = 0; i <datarows; i++){
         xdata[i][0]= 1; //first column is all 1
@@ -216,33 +260,84 @@ int main (int argc, char **argv){
         }
         fscanf(data, "\n");
     }
+     if(DEBUG){
+    printf("xdata: \n");
+    printmat(xdata, datarows, datacolumns);
+    printf("\n");
+    }
 
     //finished filling up matrixes from data files
 
     double **testtranspose = transpose(xtrain,traincolumns,trainrows); //create a transposed matrix X^T
 
-    double **current = matmulti(testtranspose,xtrain, trainrows, traincolumns, traincolumns); //multiply transpose by original (X^TX)
+    if(DEBUG){
+    printf("transposed:\n");
+    printmat(testtranspose, traincolumns, trainrows);
+    printf("\n");
+    }
+
+    double **current = matmulti(testtranspose,xtrain ,trainrows, traincolumns,    traincolumns); //multiply transpose by original (X^TX)
+
+    if(DEBUG){
+    printf("current:\n");
+    printmat(current, traincolumns, traincolumns);
+    printf("\n");
+    }
 
     double **I = identity(traincolumns);
 
+    if(DEBUG){
+    printf("I:\n");
+    printmat(I, traincolumns, traincolumns);
+    printf("\n");
+    }
+
     double **testinverse= inverse(current, I, traincolumns, traincolumns); //inverse the multiple  (X^TX)^-1
 
-    current = matmulti(testinverse,testtranspose, traincolumns,traincolumns,traincolumns); //multiply next pievce of the puzzle (X^TX)^-1X^T
+    if(DEBUG){
+    printf("testinverse:\n");
+    printmat(testinverse, traincolumns, traincolumns);
+    printf("\n");
+    }
 
-    double **weights = matmulti(current,y,traincolumns,traincolumns,1); //current is now equal to weights (X^TX)^-1X^TY=W
+    double **xtxi = matmulti(testinverse,testtranspose, traincolumns,traincolumns,traincolumns); //multiply next pievce of the puzzle (X^TX)^-1X^T
+
+    if(DEBUG){
+    printf("xtxi:\n");
+    printmat(xtxi, traincolumns, traincolumns);
+    printf("\n");
+    }
+
+    double **weights = matmulti(xtxi,y,traincolumns,traincolumns,1); //current is now equal to weights (X^TX)^-1 X^T Y=W
+
+    if(DEBUG){
+    printf("weights:\n");
+    printmat(weights, traincolumns, 1);
+    printf("\n");
+    }
     
     double **answer = matmulti(xdata,weights, datacolumns, datarows, 1); //answer is XW = Y
 
-    print(answer, datarows); //prints answer
+     if(DEBUG){
+         printf("answer:\n");
+     }
+    //printmat(answer, datarows, 1);
+    //print(answer, datarows); //prints answer
+    //printf(":\n");
 
-free(xtrain);
-free(xdata);
-free(y);
-free(testtranspose);
-free(current);
-free(testinverse);
-free(weights);
-free(answer);
+   for (int i = 0; i< datarows;i++){
+        printf("%.0f\n", answer[i][0]);
+   }
+
+freedom(xtrain, trainrows);
+freedom(xdata, datarows);
+freedom(testtranspose, trainrows);
+freedom(current, traincolumns);
+freedom(testinverse, traincolumns);
+freedom(xtxi,traincolumns);
+freedom(y,trainrows);
+freedom(weights,traincolumns);
+freedom(answer,datarows);
 //free(xtest);
 
 
